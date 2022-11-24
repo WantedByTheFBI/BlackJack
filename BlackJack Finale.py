@@ -18,10 +18,16 @@ class Hand:
         deck.remove(cardholder)  # removes the same card from a copy of the deck
         self.cardsinhand.append(cardholder)  # Adds the card to it's own card list
         self.addcardsinhandvalue(cardholder)
+        if len(deck) == 0: #if the deck hits 0 cards left it "shuffles" itself
+            print("Shuffling...")
+            time.sleep(3)
+            print("Shuffled!")
+            global Deck_Constant
+            deck = Deck_Constant
         global Deck
         Deck = deck  # edits the global deck to the copy of the deck without the dealt card
         global Deckcount
-        Deckcount -= 1
+        Deckcount = len(deck)
 
     def addcardsinhandvalue(self, cardholder):
         # this function is called whenever a card is added to a hand to add the value of the card to the cards in hand list
@@ -42,12 +48,10 @@ class Hand:
         return
 
     def Checkifbusted(self):  # checks if the hand is busted or not
-        print(self.Handvalue)
         if self.Handvalue > 21:
             if (11 in self.cardsinhandvalue) == True:  # if there is an ace worth 11 in their hand
                 self.cardsinhandvalue.insert(self.cardsinhandvalue.index(11), 1) # it replaces it with a 1
                 self.cardsinhandvalue.remove(11)  # removes the 11
-                print(self.cardsinhandvalue)
                 self.updateHandValue()  # updates the handvalue
                 if self.Checkifbusted() == False: return False  # recursively checks if it's still busted
             else:
@@ -105,7 +109,7 @@ class player:  # exclusively used for the player
         return
     split = False  # will be changed by the splitting action
 Player = player()
-def CheckifDealercanplay():
+def CheckifDealercanplay():#since the dealer can't get more card if they're at 17 or higher then it checks if their handvalue is over 16 then returns true or false
     Dealer.updateHandValue()
     if Dealer.Handvalue > 16:
         Dealer.Standing = True
@@ -121,7 +125,7 @@ def printing_hands(playerhand, owner):
     print("]")
 Player.PlayerHand2.Standing = True #makes sure if it isn't active it will become active
 
-def printing_both_hands():
+def printing_both_hands(): #prints the hands of everyone
     if Player.PlayerHand2.active == True:
         printing_hands(Player.PlayerHand.cardsinhand, "Player First")
         printing_hands(Player.PlayerHand2.cardsinhand, "Player Second")
@@ -131,17 +135,60 @@ Dealer = Hand() #makes our "Dealer", which will just be a Hand Object that has t
 Deck = ['A', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K'] * 12
 Deckcount = 156
 print("Welcome to Jack's Blackjack! Note that you can only split once per round, and buying insurance is removed") #because otherwise it gets annoying to code
+print("Do you need an explaination of Blackjack?")
+explaination = input("Yes or No: ")
+if explaination.lower() == "yes": #just explains the game for them
+    time.sleep(1)
+    print("Blackjack is a gambling game, so you have to buy into a game using a bet (you can't bet more than you have/ 0 dollars or lower")
+    time.sleep(1)
+    print("")
+    print("Core idea of the game:")
+    print("In blackjack your goal is to get your hand as close to 21 as possible without going over 21")
+    print("You play against the dealer, and you lose your bet if your hand is worth less than their hand when everyone is done")
+    print("You start off the game being dealt 2 cards, and the dealer starts off with 2(but only the first is face-up)")
+    print("From there you have to either type in \"Play\"(caps doesn't matter) to confirm you want to play, or \"Surrender\"")
+    print("Surrendering returns half your bet to you, and it's really only done if you think it's highly likely the dealer has a hand worth 21")
+    print("Since if the dealer has a hand worth 21 to start with then you automatically lose")
+    waiting = input("Enter anything into this prompt to proceed once you are ready to move onto the next part of the explaination:")
+    print("")
+    print("Using your hand:")
+    print("Once you enter that you want to play, you have the option to hit, stand or double down (or split in a specific case)")
+    print("Hitting: Hitting adds a card to your hand")
+    print("Standing: Standing means you are done with your hand, and so won't be doing anything with it anymore")
+    print("Doubling Down: Doubling down adds a card to your hand, doubles your bet on that hand, and makes that hand stand")
+    print("Splitting: Splitting can only be done at the very start of the game, and only if your 2 cards are the same number/face card")
+    print("Splitting splits your hand into 2, each having 1 of the original cards, and then adding a card to each of them")
+    print("Each split hand has it's own bet, and you make actions for them seperately")
+    waiting = input("Enter anything into this prompt to proceed once you are ready to move onto the next part of the explaination:")
+    print("")
+    print("The Deck and cards:")
+    print("The Deck in blackjack is a standard playing card deck, although we shuffle 3 decks together here to make card counting harder")
+    print("Each number card has a value of the number on it")
+    print("Each face card has a value equal to 10")
+    print("And finally aces have a value of 11 or 1, whichever is more benefical for you")
+    waiting = input("Enter anything into this prompt to proceed once you are ready to move onto the next part of the explaination:")
+    print("")
+    print("Victory conditions:")
+    print("Once everyone is standing or has busted(gone over 21 with their hand), we check who won")
+    print("If your hand is worth more than the dealers then you win an amount equal to your bet")
+    print("If your hand is worth 21 and the dealers isn't then you win an amount equal to 1.5 times your bet")
+    print("If your hand is worth less than the dealers then you lose the bet")
+    print("If the dealers hand is worth 21 off the bat you instantly lose")
+    print("If your hand is equal to theirs than nobody wins or loses anything")
+    print("And that's everything you need to know about Blackjack, please reference the game manual if you have questions")
+    waiting = input("Enter anything into this prompt to proceed once you are ready to play:")
 while True: #this runs until it doesn't
     Player.PlayerHand = Hand()
     Player.PlayerHand2 = Hand()
     Dealer = Hand()
     Player.PlayerHand2.Standing = True
     Player.split = False
-    while Deck == 0: #if the deck hits 0 cards left then it resets itself
-        Deck = Deck_Constant
     print("You have $", end='')
     print(Player.Money)
-    bet = int(input("How much would you like to bet? ")) #how much they want to bet
+    bet = input("How much would you like to bet? ") #how much they want to bet
+    if bet.lower() == "yes":
+        bet = Player.Money
+    bet = int(bet)
     while bet > Player.Money or bet <= 0: #if the bet is more then they have or <0 then it makes them reenter a valid number
         print("You cannot bet $" + bet)
         bet = input("Please reenter how much you would like to bet: ")
@@ -195,7 +242,7 @@ while True: #this runs until it doesn't
             action = input("Would you like to Split your hand?(Yes or No)")
             if action.lower() == "Yes":
                 Player.Split()
-        while Player.PlayerHand.Standing == False or Player.PlayerHand2 == False or Dealer.Standing == False:
+        while Player.PlayerHand.Standing == False or Player.PlayerHand2 == False or Dealer.Standing == False: #while everyone isn't standing
             printing_both_hands()
             if Player.PlayerHand.Checkifbusted() != False:
                 Player.PlayerHand.Standing = True
@@ -240,19 +287,19 @@ while True: #this runs until it doesn't
                         Player.PlayerHand.Standing = True
                         Player.PlayerHand.Bet *= 2
             if CheckifDealercanplay() == False:
-                Dealer.Standing = True
-            if Dealer.Standing == False:
+                Dealer.Standing = True #forces the dealer to stand if checkifdealercan play returns false
+            if Dealer.Standing == False: #if he can play then he adds a card to his hand
                 Dealer.addcardtohand(Deck, Deckcount)
             Player.PlayerHand.updateHandValue()
-
-
-        printing_both_hands()
         Player.PlayerHand.updateHandValue() #just does a final check of all of their handvalues before paying out
         Player.PlayerHand2.updateHandValue()
         Dealer.updateHandValue()
         Player.PlayerHand.CalculatingMoneyGainLoss()
         if Player.PlayerHand2.active == True:
             Player.PlayerHand2.CalculatingMoneyGainLoss()
+        if Player.Money <= 0:
+            print("Unfortunately you lost all your money and can't play anymore")
+            break
         print("Would you like to play again? Yes or No")
         playagain = input()
         if playagain.lower() == "yes":
